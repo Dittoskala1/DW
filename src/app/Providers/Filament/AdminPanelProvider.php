@@ -50,6 +50,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 \Awcodes\Overlook\Widgets\OverlookWidget::class,
+                \App\Filament\Admin\Widgets\EventStats::class,
+                \App\Filament\Admin\Widgets\EventsToday::class,
+                \App\Filament\Admin\Widgets\LatestEvents::class,
+
             ])
             ->navigationGroups([
                 NavigationGroup::make()
@@ -57,8 +61,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
-                    ->label(fn () => auth()->user()->name)
-                    ->url(fn (): string => EditProfilePage::getUrl())
+                    ->label(fn() => auth()->user()->name)
+                    ->url(fn(): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle'),
                 // 'profile' => \Filament\Navigation\MenuItem::make()
                 //     ->label(fn () => auth()->user()->name)
