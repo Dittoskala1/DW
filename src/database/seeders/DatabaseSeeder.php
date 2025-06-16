@@ -15,18 +15,24 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Pastikan role super_admin ada
-        if (!Role::where('name', 'super_admin')->exists()) {
-            Role::create(['name' => 'super_admin']);
-        }
-
-        if (User::count() == 0) {
-            $user = \App\Models\User::factory()->create([
+        if (!User::where('email', 'admin@admin.com')->exists()) {
+            $admin = User::factory()->create([
                 'name' => 'Admin',
                 'email' => 'admin@admin.com',
+                'password' => bcrypt('password'), 
             ]);
-
-            $user->assignRole('super_admin');
+            $admin->assignRole('super_admin');
         }
+
+        if (!User::where('email', 'user@admin.com')->exists()) {
+            $user = User::factory()->create([
+                'name' => 'User',
+                'email' => 'user@admin.com',
+                'password' => bcrypt('password'), 
+            ]);
+            $user->assignRole('mahasiswa');  
+        }
+
 
         $this->call([
             CategorySeeder::class,
@@ -34,6 +40,7 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             OrganizerSeeder::class,
             AudienceSeeder::class,
+            RoleSeeder::class,
         ]);
     }
 }

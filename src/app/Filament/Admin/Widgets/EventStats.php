@@ -16,4 +16,9 @@ class EventStats extends BaseWidget
             Stat::make('Draft', Event::where('status', 'draft')->count()),
         ];
     }
+
+    public static function canView(): bool
+    {
+        return request()->routeIs('filament.admin.pages.event-dashboard');
+    }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity;
 
+
 class LatestAccessLogs extends BaseWidget
 {
     use HasWidgetShield;

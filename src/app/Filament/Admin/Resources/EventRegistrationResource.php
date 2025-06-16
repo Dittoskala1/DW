@@ -2,133 +2,129 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\EventResource\Pages;
-use App\Filament\Admin\Resources\EventResource\RelationManagers;
-use App\Models\Event;
+use App\Filament\Admin\Resources\EventRegistrationResource\Pages;
+use App\Models\EventRegistration;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-
-class EventResource extends Resource
+class EventRegistrationResource extends Resource
 {
-    protected static ?string $model = Event::class;
-
+    protected static ?string $model = EventRegistration::class;
     public static function getNavigationGroup(): ?string
     {
         return 'Events';
     }
 
-    public static function getNavigationIcon(): string
-    {
-        return 'heroicon-o-calendar-days';
-    }
+    protected static ?int $navigationSort = -2;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-   public static function form(Form $form): Form
+    public static function form(Form $form): Form
 {
     return $form
         ->schema([
+            Forms\Components\TextInput::make('applicant_name')
+                ->label('Applicant Name')
+                ->required(),
+
             Forms\Components\TextInput::make('title')
                 ->required()
                 ->maxLength(255),
 
             Forms\Components\Textarea::make('description')
-                ->required()
                 ->columnSpanFull(),
 
+            // Date and Time pickers
             Forms\Components\DatePicker::make('start_date')
                 ->required(),
 
-            Forms\Components\TimePicker::make('start_time')
+            Forms\Components\TimePicker::make('start_time') 
                 ->required(),
 
             Forms\Components\DatePicker::make('end_date')
                 ->required(),
 
-            Forms\Components\TimePicker::make('end_time')
+            Forms\Components\TimePicker::make('end_time') 
                 ->required(),
 
-            // Dropdown enum status (langsung tampil)
-            Forms\Components\Select::make('status')
-                ->required()
-                ->options([
-                    'draft' => 'Draft',
-                    'published' => 'Published',
-                    'archived' => 'Archived',
-                ]),
-
-            // Dropdown relasi Category
+            // Category
             Forms\Components\Select::make('category_id')
                 ->label('Category')
-                ->required()
-                ->relationship('category', 'name'),
-
-            // Dropdown relasi Organizer
-            Forms\Components\Select::make('organizer_id')
-                ->label('Organizer')
-                ->relationship('organizer', 'name')
+                ->relationship('category', 'name')
                 ->nullable(),
 
-            // Dropdown relasi Location
+            // Location
             Forms\Components\Select::make('location_id')
                 ->label('Location')
                 ->relationship('location', 'venue_name')
                 ->nullable(),
 
-            // Dropdown relasi Audience
+            // Audience
             Forms\Components\Select::make('audience_id')
                 ->label('Audience')
                 ->relationship('audience', 'name')
                 ->nullable(),
+
+            // Status
+            Forms\Components\Select::make('status')
+                ->label('Status')
+                ->required()
+                ->options([
+                    'pending' => 'Pending',
+                    'approved' => 'Approved',
+                    'rejected' => 'Rejected',
+                ])
+                ->default('pending'),
         ]);
 }
-
-
 
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('applicant_name')
+                    ->label('Applicant Name')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('start_time'),
+
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('end_time'),
-                Tables\Columns\TextColumn::make('status'),
+
+                
                 Tables\Columns\TextColumn::make('category.name')
-                    ->label('Category')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('organizer.name')
-                    ->label('Organizer')
-                    ->sortable()
-                    ->searchable(),
-
+                ->label('Category')
+                ->sortable(),
+                
                 Tables\Columns\TextColumn::make('location.venue_name')
-                    ->label('Location')
-                    ->sortable()
-                    ->searchable(),
-
+                ->label('Location')
+                ->sortable(),
+                
                 Tables\Columns\TextColumn::make('audience.name')
-                    ->label('Audience')
-                    ->sortable()
-                    ->searchable(),
-
+                ->label('Audience')
+                ->sortable(),
+                
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -147,6 +143,7 @@ class EventResource extends Resource
             ]);
     }
 
+
     public static function getRelations(): array
     {
         return [
@@ -157,9 +154,9 @@ class EventResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEvents::route('/'),
-            'create' => Pages\CreateEvent::route('/create'),
-            'edit' => Pages\EditEvent::route('/{record}/edit'),
+            'index' => Pages\ListEventRegistrations::route('/'),
+            'create' => Pages\CreateEventRegistration::route('/create'),
+            'edit' => Pages\EditEventRegistration::route('/{record}/edit'),
         ];
     }
 }
