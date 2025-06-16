@@ -2,9 +2,9 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\CategoryResource\Pages;
-use App\Filament\Admin\Resources\CategoryResource\RelationManagers;
-use App\Models\Category;
+use App\Filament\Admin\Resources\OrganizerResource\Pages;
+use App\Filament\Admin\Resources\OrganizerResource\RelationManagers;
+use App\Models\Organizer;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,9 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CategoryResource extends Resource
+class OrganizerResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Organizer::class;
 
     public static function getNavigationGroup(): ?string
     {
@@ -24,13 +24,14 @@ class CategoryResource extends Resource
 
     public static function getNavigationIcon(): string
     {
-        return 'heroicon-o-folder';
+        return 'heroicon-o-building-office';
     }
 
     public static function getNavigationSort(): int
     {
-        return 1;
+        return 3;
     }
+
 
     public static function form(Form $form): Form
     {
@@ -39,6 +40,21 @@ class CategoryResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('type')
+                    ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\Textarea::make('bio')
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('logo_url')
+                    ->maxLength(255)
+                    ->default(null),
             ]);
     }
 
@@ -47,6 +63,13 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('logo_url')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -80,9 +103,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListOrganizers::route('/'),
+            'create' => Pages\CreateOrganizer::route('/create'),
+            'edit' => Pages\EditOrganizer::route('/{record}/edit'),
         ];
     }
 }

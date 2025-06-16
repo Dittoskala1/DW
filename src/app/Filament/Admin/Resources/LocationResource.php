@@ -2,9 +2,9 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\CategoryResource\Pages;
-use App\Filament\Admin\Resources\CategoryResource\RelationManagers;
-use App\Models\Category;
+use App\Filament\Admin\Resources\LocationResource\Pages;
+use App\Filament\Admin\Resources\LocationResource\RelationManagers;
+use App\Models\Location;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,9 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CategoryResource extends Resource
+class LocationResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Location::class;
 
     public static function getNavigationGroup(): ?string
     {
@@ -24,21 +24,34 @@ class CategoryResource extends Resource
 
     public static function getNavigationIcon(): string
     {
-        return 'heroicon-o-folder';
+        return 'heroicon-o-map-pin';
     }
 
     public static function getNavigationSort(): int
     {
-        return 1;
+        return 4;
     }
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                Forms\Components\TextInput::make('venue_name')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('building_name')
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\TextInput::make('room_number')
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\TextInput::make('address')
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\TextInput::make('capacity')
+                    ->numeric()
+                    ->default(null),
             ]);
     }
 
@@ -46,8 +59,17 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('venue_name')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('building_name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('room_number')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('address')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('capacity')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -80,9 +102,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListLocations::route('/'),
+            'create' => Pages\CreateLocation::route('/create'),
+            'edit' => Pages\EditLocation::route('/{record}/edit'),
         ];
     }
 }

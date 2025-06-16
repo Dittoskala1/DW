@@ -2,9 +2,9 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\CategoryResource\Pages;
-use App\Filament\Admin\Resources\CategoryResource\RelationManagers;
-use App\Models\Category;
+use App\Filament\Admin\Resources\AudienceResource\Pages;
+use App\Filament\Admin\Resources\AudienceResource\RelationManagers;
+use App\Models\Audience;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,9 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CategoryResource extends Resource
+class AudienceResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Audience::class;
 
     public static function getNavigationGroup(): ?string
     {
@@ -24,13 +24,14 @@ class CategoryResource extends Resource
 
     public static function getNavigationIcon(): string
     {
-        return 'heroicon-o-folder';
+        return 'heroicon-o-users';
     }
 
     public static function getNavigationSort(): int
     {
-        return 1;
+        return 2;
     }
+
 
     public static function form(Form $form): Form
     {
@@ -80,9 +81,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListAudiences::route('/'),
+            'create' => Pages\CreateAudience::route('/create'),
+            'edit' => Pages\EditAudience::route('/{record}/edit'),
         ];
     }
 }

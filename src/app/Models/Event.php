@@ -16,14 +16,31 @@ class Event extends Model
         'start_time',
         'end_date',
         'end_time',
-        'location',
         'status',
         'category_id',
-        'poster_url',
+        'organizer_id',
+        'location_id',
+        'audience_id',
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function organizer()
+    {
+        return $this->belongsTo(Organizer::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
+    public function audience()
+    {
+        return $this->belongsTo(Audience::class);
+    }
+
 }
