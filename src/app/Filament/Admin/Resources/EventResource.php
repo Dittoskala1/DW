@@ -12,6 +12,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EventExport;
+
 
 
 class EventResource extends Resource
@@ -28,64 +32,64 @@ class EventResource extends Resource
         return 'heroicon-o-calendar-days';
     }
 
-   public static function form(Form $form): Form
-{
-    return $form
-        ->schema([
-            Forms\Components\TextInput::make('title')
-                ->required()
-                ->maxLength(255),
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('title')
+                    ->required()
+                    ->maxLength(255),
 
-            Forms\Components\Textarea::make('description')
-                ->required()
-                ->columnSpanFull(),
+                Forms\Components\Textarea::make('description')
+                    ->required()
+                    ->columnSpanFull(),
 
-            Forms\Components\DatePicker::make('start_date')
-                ->required(),
+                Forms\Components\DatePicker::make('start_date')
+                    ->required(),
 
-            Forms\Components\TimePicker::make('start_time')
-                ->required(),
+                Forms\Components\TimePicker::make('start_time')
+                    ->required(),
 
-            Forms\Components\DatePicker::make('end_date')
-                ->required(),
+                Forms\Components\DatePicker::make('end_date')
+                    ->required(),
 
-            Forms\Components\TimePicker::make('end_time')
-                ->required(),
+                Forms\Components\TimePicker::make('end_time')
+                    ->required(),
 
-            // Dropdown enum status (langsung tampil)
-            Forms\Components\Select::make('status')
-                ->required()
-                ->options([
-                    'draft' => 'Draft',
-                    'published' => 'Published',
-                    'archived' => 'Archived',
-                ]),
+                // Dropdown enum status (langsung tampil)
+                Forms\Components\Select::make('status')
+                    ->required()
+                    ->options([
+                        'draft' => 'Draft',
+                        'published' => 'Published',
+                        'archived' => 'Archived',
+                    ]),
 
-            // Dropdown relasi Category
-            Forms\Components\Select::make('category_id')
-                ->label('Category')
-                ->required()
-                ->relationship('category', 'name'),
+                // Dropdown relasi Category
+                Forms\Components\Select::make('category_id')
+                    ->label('Category')
+                    ->required()
+                    ->relationship('category', 'name'),
 
-            // Dropdown relasi Organizer
-            Forms\Components\Select::make('organizer_id')
-                ->label('Organizer')
-                ->relationship('organizer', 'name')
-                ->nullable(),
+                // Dropdown relasi Organizer
+                Forms\Components\Select::make('organizer_id')
+                    ->label('Organizer')
+                    ->relationship('organizer', 'name')
+                    ->nullable(),
 
-            // Dropdown relasi Location
-            Forms\Components\Select::make('location_id')
-                ->label('Location')
-                ->relationship('location', 'venue_name')
-                ->nullable(),
+                // Dropdown relasi Location
+                Forms\Components\Select::make('location_id')
+                    ->label('Location')
+                    ->relationship('location', 'venue_name')
+                    ->nullable(),
 
-            // Dropdown relasi Audience
-            Forms\Components\Select::make('audience_id')
-                ->label('Audience')
-                ->relationship('audience', 'name')
-                ->nullable(),
-        ]);
-}
+                // Dropdown relasi Audience
+                Forms\Components\Select::make('audience_id')
+                    ->label('Audience')
+                    ->relationship('audience', 'name')
+                    ->nullable(),
+            ]);
+    }
 
 
 
@@ -140,6 +144,7 @@ class EventResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
