@@ -21,6 +21,7 @@ return new class extends Migration {
 
             
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('organizer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('audience_id')->nullable()->constrained()->nullOnDelete();
             
