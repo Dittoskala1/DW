@@ -20,10 +20,11 @@ class EventsToday extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('title')->searchable(),
                 Tables\Columns\TextColumn::make('start_time')->label('Start')->time(),
-                Tables\Columns\TextColumn::make('location'),
+                Tables\Columns\TextColumn::make('location.venue_name')->label('Location'),
                 Tables\Columns\TextColumn::make('status')->badge(),
             ]);
     }
+
     public static function canView(): bool
     {
         return request()->routeIs('filament.admin.pages.event-dashboard');

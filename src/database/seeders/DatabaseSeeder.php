@@ -12,8 +12,22 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
+
+     
+
     public function run(): void
     {
+
+        $this->call([
+            RoleSeeder::class,
+            CategorySeeder::class,
+            EventSeeder::class,
+            LocationSeeder::class,
+            OrganizerSeeder::class,
+            AudienceSeeder::class,
+            RoleSeeder::class,
+        ]);
+        
         // Pastikan role super_admin ada
         if (!User::where('email', 'admin@admin.com')->exists()) {
             $admin = User::factory()->create([
@@ -34,13 +48,6 @@ class DatabaseSeeder extends Seeder
         }
 
 
-        $this->call([
-            CategorySeeder::class,
-            EventSeeder::class,
-            LocationSeeder::class,
-            OrganizerSeeder::class,
-            AudienceSeeder::class,
-            RoleSeeder::class,
-        ]);
+        
     }
 }
