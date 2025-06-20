@@ -19,6 +19,7 @@ class EventRegistration extends Model
         'end_time',
         'status',
         'category_id',
+        'organizer_id',
         'location_id',
         'audience_id',
     ];
@@ -26,6 +27,11 @@ class EventRegistration extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function organizer()
+    {
+        return $this->belongsTo(Organizer::class);
     }
 
     public function category()

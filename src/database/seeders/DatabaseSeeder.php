@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             OrganizerSeeder::class,
             AudienceSeeder::class,
-            RoleSeeder::class,
         ]);
         
         // Pastikan role super_admin ada

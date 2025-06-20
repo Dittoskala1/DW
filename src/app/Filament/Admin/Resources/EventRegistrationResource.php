@@ -27,34 +27,34 @@ class EventRegistrationResource extends Resource
 
     // 👇 Permission untuk menampilkan data
     public static function canViewAny(): bool
-{
-    $user = auth()->user();
-    return $user->hasRole('super_admin') || $user->can('view event registration');
-}
+    {
+        $user = auth()->user();
+        return $user->hasRole('super_admin') || $user->can('view event registration');
+    }
 
-public static function canCreate(): bool
-{
-    $user = auth()->user();
-    return $user->hasRole('super_admin') || $user->can('create event registration');
-}
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+        return $user->hasRole('super_admin') || $user->can('create event registration');
+    }
 
-public static function canEdit(Model $record): bool
-{
-    $user = auth()->user();
-    return $user->hasRole('super_admin') || $user->can('update event registration');
-}
+    public static function canEdit(Model $record): bool
+    {
+        $user = auth()->user();
+        return $user->hasRole('super_admin') || $user->can('update event registration');
+    }
 
-public static function canDelete(Model $record): bool
-{
-    $user = auth()->user();
-    return $user->hasRole('super_admin') || $user->can('delete event registration');
-}
+    public static function canDelete(Model $record): bool
+    {
+        $user = auth()->user();
+        return $user->hasRole('super_admin') || $user->can('delete event registration');
+    }
 
-public static function shouldRegisterNavigation(): bool
-{
-    $user = auth()->user();
-    return $user->hasRole('super_admin') || $user->can('view event registration');
-}
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        return $user->hasRole('super_admin') || $user->can('view event registration');
+    }
 
 
     public static function form(Form $form): Form
@@ -75,13 +75,13 @@ public static function shouldRegisterNavigation(): bool
                 Forms\Components\DatePicker::make('start_date')
                     ->required(),
 
-                Forms\Components\TimePicker::make('start_time') 
+                Forms\Components\TimePicker::make('start_time')
                     ->required(),
 
                 Forms\Components\DatePicker::make('end_date')
                     ->required(),
 
-                Forms\Components\TimePicker::make('end_time') 
+                Forms\Components\TimePicker::make('end_time')
                     ->required(),
 
                 Forms\Components\Select::make('category_id')
@@ -93,6 +93,12 @@ public static function shouldRegisterNavigation(): bool
                     ->label('Location')
                     ->relationship('location', 'venue_name')
                     ->nullable(),
+
+                Forms\Components\Select::make('organizer_id')
+                    ->label('Organizer')
+                    ->relationship('organizer', 'name')
+                    ->nullable(),
+
 
                 Forms\Components\Select::make('audience_id')
                     ->label('Audience')
@@ -108,7 +114,7 @@ public static function shouldRegisterNavigation(): bool
                         'rejected' => 'Rejected',
                     ])
                     ->default('pending')
-                    ->visible(fn () => auth()->user()?->hasRole('super_admin')),
+                    ->visible(fn() => auth()->user()?->hasRole('super_admin')),
 
             ]);
     }
