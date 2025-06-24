@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             CategorySeeder::class,
-            EventSeeder::class,
             LocationSeeder::class,
             OrganizerSeeder::class,
             AudienceSeeder::class,
+            EventSeeder::class,
         ]);
         
         // Pastikan role super_admin ada

@@ -3,20 +3,20 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\EventResource\Pages;
-use App\Filament\Admin\Resources\EventResource\RelationManagers;
 use App\Models\Event;
+use App\Models\Category;
+use App\Models\Organizer;
+use App\Models\Location;
+use App\Models\Audience;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\EventExport;
-
-
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 
 class EventResource extends Resource
 {
@@ -56,34 +56,30 @@ class EventResource extends Resource
                 Forms\Components\TimePicker::make('end_time')
                     ->required(),
 
-                // Dropdown enum status (langsung tampil)
                 Forms\Components\Select::make('status')
                     ->required()
                     ->options([
                         'draft' => 'Draft',
                         'published' => 'Published',
                         'archived' => 'Archived',
+                        'pending' => 'Pending',
                     ]),
 
-                // Dropdown relasi Category
                 Forms\Components\Select::make('category_id')
                     ->label('Category')
                     ->required()
                     ->relationship('category', 'name'),
 
-                // Dropdown relasi Organizer
                 Forms\Components\Select::make('organizer_id')
                     ->label('Organizer')
                     ->relationship('organizer', 'name')
                     ->nullable(),
 
-                // Dropdown relasi Location
                 Forms\Components\Select::make('location_id')
                     ->label('Location')
                     ->relationship('location', 'venue_name')
                     ->nullable(),
 
-                // Dropdown relasi Audience
                 Forms\Components\Select::make('audience_id')
                     ->label('Audience')
                     ->relationship('audience', 'name')
@@ -91,60 +87,84 @@ class EventResource extends Resource
             ]);
     }
 
-
-
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('start_date')
-                    ->date()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('title')->searchable(),
+                Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('start_time'),
-                Tables\Columns\TextColumn::make('end_date')
-                    ->date()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('end_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('end_time'),
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('category.name')
-                    ->label('Category')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('organizer.name')
-                    ->label('Organizer')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('location.venue_name')
-                    ->label('Location')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('audience.name')
-                    ->label('Audience')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('category.name')->label('Category')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('organizer.name')->label('Organizer')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('location.venue_name')->label('Location')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('audience.name')->label('Audience')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
+            ->headerActions([
+                Action::make('Import CSV')
+                    ->form([
+                        Forms\Components\FileUpload::make('csv_file')
+                            ->label('Upload CSV')
+                            ->disk('public')
+                            ->directory('uploads')
+                            ->required()
+                            ->acceptedFileTypes(['text/csv', 'text/plain']),
+                    ])
+                    ->action(function (array $data): void {
+                        $filePath = Storage::disk('public')->path($data['csv_file']);
+                        $csv = Reader::createFromPath($filePath, 'r');
+                        $csv->setHeaderOffset(0);
+
+                        // Validasi manual
+                        function isValidDate($date): bool {
+                            $d = date_parse($date);
+                            return checkdate($d['month'] ?? 0, $d['day'] ?? 0, $d['year'] ?? 0);
+                        }
+
+                        function isValidTime($time): bool {
+                            return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $time);
+                        }
+
+                        foreach ($csv->getRecords() as $record) {
+                            $categoryId = is_numeric($record['category_id']) && Category::find($record['category_id']) ? $record['category_id'] : 1;
+                            $organizerId = is_numeric($record['organizer_id']) && Organizer::find($record['organizer_id']) ? $record['organizer_id'] : null;
+                            $locationId = is_numeric($record['location_id']) && Location::find($record['location_id']) ? $record['location_id'] : null;
+                            $audienceId = is_numeric($record['audience_id']) && Audience::find($record['audience_id']) ? $record['audience_id'] : null;
+
+                            $statusList = ['draft', 'published', 'archived', 'pending'];
+                            $status = in_array($record['status'], $statusList) ? $record['status'] : 'draft';
+
+                            Event::create([
+                                'title' => $record['title'] ?? 'Untitled',
+                                'description' => $record['description'] ?? '-',
+                                'start_date' => isValidDate($record['start_date']) ? $record['start_date'] : '2222-01-01',
+                                'start_time' => isValidTime($record['start_time']) ? $record['start_time'] : '00:00',
+                                'end_date' => isValidDate($record['end_date']) ? $record['end_date'] : '2222-01-01',
+                                'end_time' => isValidTime($record['end_time']) ? $record['end_time'] : '00:00',
+                                'status' => $status,
+                                'category_id' => $categoryId,
+                                'organizer_id' => $organizerId,
+                                'location_id' => $locationId,
+                                'audience_id' => $audienceId,
+                            ]);
+                        }
+
+                        Notification::make()
+                            ->title('Import sukses. Data tidak valid diisi default (2000-01-01 / 00:00).')
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading('Import Event dari CSV')
+                    ->modalSubmitActionLabel('Import')
+                    ->color('success')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -154,9 +174,7 @@ class EventResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

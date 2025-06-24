@@ -4,15 +4,15 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Event;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\DB;
-use Filament\Widgets\Widget;
+
 class MonthlyEventsChart extends ChartWidget
 {
-    protected static ?string $heading = 'Events Created Per Month';
+    protected static ?string $heading = 'Events per Start Month';
 
     protected function getData(): array
     {
-        $monthlyEvents = Event::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+        $monthlyEvents = Event::selectRaw('MONTH(start_date) as month, COUNT(*) as count')
+            ->whereNotNull('start_date')
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month')
@@ -22,8 +22,8 @@ class MonthlyEventsChart extends ChartWidget
         $labels = [];
 
         foreach (range(1, 12) as $month) {
-            $labels[] = date('F', mktime(0, 0, 0, $month, 10));
-            $data[] = $monthlyEvents[$month] ?? 0;
+            $labels[] = date('F', mktime(0, 0, 0, $month, 10)); // Nama bulan
+            $data[] = $monthlyEvents[$month] ?? 0; // Isi data atau 0
         }
 
         return [
@@ -43,11 +43,8 @@ class MonthlyEventsChart extends ChartWidget
         return 'bar';
     }
 
-    
     public static function canView(): bool
     {
         return request()->routeIs('filament.admin.pages.event-dashboard');
     }
-
-    
 }
