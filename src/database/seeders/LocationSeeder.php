@@ -24,5 +24,29 @@ class LocationSeeder extends Seeder
             'address' => 'Near Student Union',
             'capacity' => 1000,
         ]);
+
+        Location::create([
+            'venue_name' => 'Lobby',
+            'building_name' => null,
+            'room_number' => null,
+            'address' => 'Univ Esa Unggul Building A',
+            'capacity' => 1000,
+        ]);
+
+        Location::create([
+            'venue_name' => 'Library',
+            'building_name' => null,
+            'room_number' => null,
+            'address' => 'Univ Esa Unggul Building B',
+            'capacity' => 1000,
+        ]);
+
+        Location::create([
+            'venue_name' => 'Canteen',
+            'building_name' => null,
+            'room_number' => null,
+            'address' => 'Univ Esa Unggul Building A',
+            'capacity' => 1000,
+        ]);
     }
 }

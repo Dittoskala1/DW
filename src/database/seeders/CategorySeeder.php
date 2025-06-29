@@ -13,6 +13,9 @@ class CategorySeeder extends Seeder
             ['name' => 'Workshop'],
             ['name' => 'Seminar'],
             ['name' => 'Meetup'],
+            ['name' => 'Competition'],
+            ['name' => 'Exhibition'],
+            ['name' => 'Show'],
         ]);
     }
 }

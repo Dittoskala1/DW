@@ -109,59 +109,97 @@ class EventResource extends Resource
                     ->form([
                         Forms\Components\FileUpload::make('csv_file')
                             ->label('Upload CSV')
-                            ->disk('public')
-                            ->directory('uploads')
+                            ->disk('local') // simpan di storage/app
+                            ->directory('uploads/csv')
                             ->required()
                             ->acceptedFileTypes(['text/csv', 'text/plain']),
                     ])
                     ->action(function (array $data): void {
-                        $filePath = Storage::disk('public')->path($data['csv_file']);
-                        $csv = Reader::createFromPath($filePath, 'r');
-                        $csv->setHeaderOffset(0);
+                        try {
+                            $filePath = Storage::disk('local')->path($data['csv_file']);
+                            $csv = \League\Csv\Reader::createFromPath($filePath, 'r');
+                            $csv->setHeaderOffset(0);
 
-                        // Validasi manual
-                        function isValidDate($date): bool {
-                            $d = date_parse($date);
-                            return checkdate($d['month'] ?? 0, $d['day'] ?? 0, $d['year'] ?? 0);
+                            // Validasi header kolom
+                            $expectedHeaders = [
+                                'title',
+                                'description',
+                                'start_date',
+                                'start_time',
+                                'end_date',
+                                'end_time',
+                                'status',
+                                'category_id',
+                                'organizer_id',
+                                'location_id',
+                                'audience_id'
+                            ];
+                            $headers = $csv->getHeader();
+                            $missingHeaders = array_diff($expectedHeaders, $headers);
+                            if (!empty($missingHeaders)) {
+                                Notification::make()
+                                    ->title('Kolom hilang: ' . implode(', ', $missingHeaders))
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Fungsi validasi
+                            function isValidDate($date): bool
+                            {
+                                $d = date_parse($date);
+                                return checkdate($d['month'] ?? 0, $d['day'] ?? 0, $d['year'] ?? 0);
+                            }
+
+                            function isValidTime($time): bool
+                            {
+                                return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $time);
+                            }
+
+                            $successCount = 0;
+
+                            foreach ($csv->getRecords() as $record) {
+                                $categoryId = is_numeric($record['category_id']) && \App\Models\Category::find($record['category_id']) ? $record['category_id'] : 1;
+                                $organizerId = is_numeric($record['organizer_id']) && \App\Models\Organizer::find($record['organizer_id']) ? $record['organizer_id'] : null;
+                                $locationId = is_numeric($record['location_id']) && \App\Models\Location::find($record['location_id']) ? $record['location_id'] : null;
+                                $audienceId = is_numeric($record['audience_id']) && \App\Models\Audience::find($record['audience_id']) ? $record['audience_id'] : null;
+
+                                $statusList = ['draft', 'published', 'archived', 'pending'];
+                                $status = in_array($record['status'], $statusList) ? $record['status'] : 'draft';
+
+                                \App\Models\Event::create([
+                                    'title' => $record['title'] ?? 'Untitled',
+                                    'description' => $record['description'] ?? '-',
+                                    'start_date' => isValidDate($record['start_date']) ? $record['start_date'] : '2222-01-01',
+                                    'start_time' => isValidTime($record['start_time']) ? $record['start_time'] : '00:00',
+                                    'end_date' => isValidDate($record['end_date']) ? $record['end_date'] : '2222-01-01',
+                                    'end_time' => isValidTime($record['end_time']) ? $record['end_time'] : '00:00',
+                                    'status' => $status,
+                                    'category_id' => $categoryId,
+                                    'organizer_id' => $organizerId,
+                                    'location_id' => $locationId,
+                                    'audience_id' => $audienceId,
+                                ]);
+
+                                $successCount++;
+                            }
+
+                            Notification::make()
+                                ->title("Import sukses. $successCount data berhasil diimport. Data tidak valid diisi default.")
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->title('Import gagal: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
                         }
-
-                        function isValidTime($time): bool {
-                            return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $time);
-                        }
-
-                        foreach ($csv->getRecords() as $record) {
-                            $categoryId = is_numeric($record['category_id']) && Category::find($record['category_id']) ? $record['category_id'] : 1;
-                            $organizerId = is_numeric($record['organizer_id']) && Organizer::find($record['organizer_id']) ? $record['organizer_id'] : null;
-                            $locationId = is_numeric($record['location_id']) && Location::find($record['location_id']) ? $record['location_id'] : null;
-                            $audienceId = is_numeric($record['audience_id']) && Audience::find($record['audience_id']) ? $record['audience_id'] : null;
-
-                            $statusList = ['draft', 'published', 'archived', 'pending'];
-                            $status = in_array($record['status'], $statusList) ? $record['status'] : 'draft';
-
-                            Event::create([
-                                'title' => $record['title'] ?? 'Untitled',
-                                'description' => $record['description'] ?? '-',
-                                'start_date' => isValidDate($record['start_date']) ? $record['start_date'] : '2222-01-01',
-                                'start_time' => isValidTime($record['start_time']) ? $record['start_time'] : '00:00',
-                                'end_date' => isValidDate($record['end_date']) ? $record['end_date'] : '2222-01-01',
-                                'end_time' => isValidTime($record['end_time']) ? $record['end_time'] : '00:00',
-                                'status' => $status,
-                                'category_id' => $categoryId,
-                                'organizer_id' => $organizerId,
-                                'location_id' => $locationId,
-                                'audience_id' => $audienceId,
-                            ]);
-                        }
-
-                        Notification::make()
-                            ->title('Import sukses. Data tidak valid diisi default (2000-01-01 / 00:00).')
-                            ->success()
-                            ->send();
                     })
                     ->modalHeading('Import Event dari CSV')
                     ->modalSubmitActionLabel('Import')
                     ->color('success')
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
