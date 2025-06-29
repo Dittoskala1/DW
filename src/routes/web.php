@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
+use App\Exports\EventSummaryExport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EventPivotExport;
 
 /* NOTE: Do Not Remove
 / Livewire asset handling if using sub folder in domain
@@ -19,3 +22,5 @@ Livewire::setScriptRoute(function ($handle) {
 Route::get('/', function () {
     return view('welcome');
 });
+
+

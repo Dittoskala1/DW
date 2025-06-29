@@ -2,13 +2,14 @@
 
 namespace App\Filament\Admin\Pages;
 
-use App\Filament\Admin\Widgets\EventStatusChart;
-use App\Filament\Admin\Widgets\TopCategoriesChart;
 use Filament\Pages\Page;
+use Filament\Actions\Action;
 use App\Filament\Admin\Widgets\EventStats;
 use App\Filament\Admin\Widgets\EventsToday;
 use App\Filament\Admin\Widgets\LatestEvents;
-use App\Filament\Admin\Widgets\MonthlyEventsChart;   
+use App\Filament\Admin\Widgets\MonthlyEventsChart;
+use App\Filament\Admin\Widgets\TopCategoriesChart;
+use App\Filament\Admin\Widgets\EventStatusChart;
 
 class EventDashboard extends Page
 {
@@ -20,21 +21,32 @@ class EventDashboard extends Page
     protected static string $view = 'filament.admin.pages.event-dashboard';
 
     public function getHeaderWidgets(): array
-{
-    return [
-        EventStats::class,
-    ];
-}
+    {
+        return [
+            EventStats::class,
+        ];
+    }
 
-public function getFooterWidgets(): array
-{
-    return [
-        EventsToday::class,
-        LatestEvents::class,
-        MonthlyEventsChart::class,
-        TopCategoriesChart::class,
-        EventStatusChart::class,
-    ];
-}
+    public function getFooterWidgets(): array
+    {
+        return [
+            EventsToday::class,
+            LatestEvents::class,
+            MonthlyEventsChart::class,
+            TopCategoriesChart::class,
+            EventStatusChart::class,
+        ];
+    }
 
+    public function getHeaderActions(): array
+    {
+        return [
+            Action::make('export-pivot')
+            ->label('Export Data')
+            ->url(route('admin.export-pivot'))
+            ->color('info')
+            ->icon('heroicon-o-chart-bar')
+            ->openUrlInNewTab(),
+        ];
+    }
 }
