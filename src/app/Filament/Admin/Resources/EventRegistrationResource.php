@@ -18,7 +18,7 @@ class EventRegistrationResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Events';
+        return 'Events raw';
     }
 
     protected static ?int $navigationSort = -2;

@@ -22,6 +22,10 @@ class EventImportResource extends Resource
 {
     protected static ?string $model = EventImport::class;
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Events raw';
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

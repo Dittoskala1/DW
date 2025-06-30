@@ -38,15 +38,5 @@ class EventDashboard extends Page
         ];
     }
 
-    public function getHeaderActions(): array
-    {
-        return [
-            Action::make('export-pivot')
-            ->label('Export Data')
-            ->url(route('admin.export-pivot'))
-            ->color('info')
-            ->icon('heroicon-o-chart-bar')
-            ->openUrlInNewTab(),
-        ];
-    }
+    
 }
